@@ -9,23 +9,24 @@ const useUserStore = useUser();
 const { auth } = storeToRefs(useUserStore);
 
 let authToken = localStorage.getItem('Authorization');
-if (authToken) {
-  useUserStore.setAuth(authToken);
-}
+// if (authToken) {
+//   useUserStore.setAuth(authToken);
+// }
 </script>
 
 <template>
-  <template v-if="auth">
+  <!-- <template v-if="auth"> -->
     <App></App>
-  </template>
+  <!-- </template>
   <template v-else>
     <Auth></Auth>
-  </template>
+  </template> -->
 </template>
 
 <style scoped>
 .app-wrapper {
   height: 100%;
   width: 100%;
+  font-family: 'Nunito';
 }
 </style>

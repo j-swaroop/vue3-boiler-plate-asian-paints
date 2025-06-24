@@ -1,5 +1,6 @@
 <script setup>
 import { inject } from 'vue';
+import AIHomePage from '../components/asianPaintsAI/AIHomePage.vue'
 
 const rem = inject('remToPixel');
 
@@ -7,7 +8,7 @@ const rem = inject('remToPixel');
 
 <template>
   <div class="home-page-wrapper">
-    {{ rem }}
+    <AIHomePage />
   </div>
 </template>
 
