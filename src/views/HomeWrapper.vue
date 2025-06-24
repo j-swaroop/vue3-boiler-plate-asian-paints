@@ -1,9 +1,8 @@
 <script setup>
 import { inject } from 'vue';
-import AIHomePage from '../components/asianPaintsAI/AIHomePage.vue'
+import AIHomePage from '../components/asianPaintsAI/AIHomePage.vue';
 
 const rem = inject('remToPixel');
-
 </script>
 
 <template>
@@ -19,5 +18,6 @@ const rem = inject('remToPixel');
   display: grid;
   overflow: hidden;
   color: $color-red;
+  background-color: #fff;
 }
 </style>

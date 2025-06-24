@@ -1,6 +1,33 @@
 <template>
-  <div class="prompt-input-wrapper">
+  <div 
+    class="prompt-input-wrapper"
+    @dragover="handleDragOver"
+    @dragleave="handleDragLeave"
+    @drop="handleDrop"
+    @dragenter="handleDragEnter"
+  >
+    <!-- Drop overlay -->
+    <div 
+      v-show="isDragOver" 
+      class="drop-overlay"
+      :class="{ visible: isDragOver }"
+      @dragover.prevent
+      @drop="handleDrop"
+    >
+      <div class="drop-content">
+        <span class="drop-text">Dropped files appear here</span>
+      </div>
+    </div>
+    
     <div class="prompt-input-container">
+      <div class="dropped-file-wrapper" v-if="droppedFileUrl">
+        <div class='dropped-file'>
+          <img :src="droppedFileUrl" alt="Dropped file preview" class="dropped-image" />
+        </div>
+        <div  class="remove-file-btn" @click="removeDroppedFile">
+          <img :src="appImages['X.svg']" alt="Remove" class="remove-file-icon"/>
+        </div>
+      </div>
       <div class="input-section">
         <textarea
           v-model="inputValue"
@@ -88,7 +115,9 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps, defineEmits, inject } from 'vue';
+
+const appImages = inject('appImages');
 
 const props = defineProps({
   placeholder: {
@@ -99,17 +128,88 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  acceptedFileTypes: {
+    type: Array,
+    default: () => ['*/*'], // Accept all file types by default
+  },
+  maxFileSize: {
+    type: Number,
+    default: 100 * 1024 * 1024, // 100MB
+  },
 });
 
-const emit = defineEmits(['submit']);
+const emit = defineEmits(['submit', 'filesDropped']);
 
 const inputValue = ref('');
 const textareaRef = ref(null);
+const isDragOver = ref(false);
+const droppedFile = ref(null);
+const droppedFileUrl = ref('');
 
 const handleSubmit = () => {
   if (inputValue.value.trim()) {
     emit('submit', inputValue.value.trim());
     // Don't clear inputValue here - let parent handle it after API call
+  }
+};
+
+// Drag and drop handlers
+const handleDragOver = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  isDragOver.value = true;
+};
+
+const handleDragEnter = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  isDragOver.value = true;
+};
+
+const handleDragLeave = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  // Only set to false if we're leaving the entire drop zone
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    isDragOver.value = false;
+  }
+};
+
+const handleDrop = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  isDragOver.value = false;
+
+  const files = Array.from(e.dataTransfer.files);
+  
+  if (files.length > 0) {
+    const validFiles = files.filter(file => {
+      // Check file type
+      const isValidType = props.acceptedFileTypes.some(type => {
+        if (type === 'image/*') {
+          return file.type.startsWith('image/');
+        }
+        if (type === '*/*') {
+          return true;
+        }
+        return file.type === type;
+      });
+
+      // Check file size
+      const isValidSize = file.size <= props.maxFileSize;
+
+      return isValidType && isValidSize;
+    });
+
+    if (validFiles.length > 0) {
+      emit('filesDropped', validFiles);
+      droppedFile.value = validFiles[0];
+      if (droppedFile.value && droppedFile.value.type.startsWith('image/')) {
+        droppedFileUrl.value = URL.createObjectURL(droppedFile.value);
+      } else {
+        droppedFileUrl.value = '';
+      }
+    }
   }
 };
 
@@ -149,6 +249,11 @@ const checkAndResize = () => {
   }
 };
 
+const removeDroppedFile = () => {
+  droppedFile.value = null;
+  droppedFileUrl.value = '';
+};
+
 // Expose methods to parent component
 defineExpose({
   clearInput,
@@ -163,7 +268,61 @@ defineExpose({
   gap: 0.5rem;
   //   align-self: stretch;
   justify-content: center;
-  min-width: 50.8125rem;
+  max-width: 50.8125rem;
+  width: 100%;
+  position: relative;
+
+  .drop-overlay {
+    display: flex;
+    padding: 16px;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-radius: 8px;
+    border: 1px solid #431A80;
+    background: rgba(249, 250, 251, 0.15);
+    box-shadow: 0px 0px 32px 0px rgba(67, 26, 128, 0.25);
+    backdrop-filter: blur(50px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    transition: opacity 0.7s cubic-bezier(0.4,0,0.2,1), visibility 0.7s cubic-bezier(0.4,0,0.2,1);
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+
+    &.visible {
+      opacity: 1;
+      pointer-events: auto;
+      visibility: visible;
+    }
+
+    .drop-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+
+      .drop-text {
+        color: var(--gray-700, #374151);
+        text-align: center;
+        font-family: 'Nunito', sans-serif;
+        font-size: 20px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+        letter-spacing: 0;
+        margin: 0;
+        padding: 0 20px;
+      }
+    }
+  }
 
   .prompt-input-container {
     border-radius: 0.5rem;
@@ -178,6 +337,11 @@ defineExpose({
     justify-content: space-between;
     align-items: flex-start;
     gap: 1rem;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: #d1d5db;
+    }
 
     .attach-catalog-container {
       display: flex;
@@ -295,6 +459,55 @@ defineExpose({
         }
       }
     }
+  }
+}
+
+.dropped-file-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 8px;
+  &:hover .remove-file-btn {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.dropped-file {
+  width: 60px;
+  height: 60px;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.dropped-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.remove-file-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: rgba(255,255,255,0.95);
+  color: #431A80;
+  border-radius: 50%;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(67,26,128,0.10);
+  .remove-file-icon{
+    width: 1rem;
+    height: 1rem;
   }
 }
 </style>

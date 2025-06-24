@@ -1,25 +1,41 @@
 <template>
   <div class="ai-home-page-wrapper">
+    <div class="animated-background"></div>
+    <div class="header">
+      <img :src="appImages['asian-paints-logo.png']" class="asian-paints-logo" />
+      <!-- <img :src="appImages['more-actions.svg']"/> -->
+    </div>
     <div class="ai-home-page-content-wrapper">
+      <!-- <div></div> -->
+      <div class="asian-paints-ai-heading-wrapper">
+        <img :src="appImages['ai-logo.svg']" class="ai-logo-wrapper heartbeat-animation" />
+        <div class="asian-paints-ai-text">Asian Paints AI</div>
+      </div>
       <div class="chat-voice-prompt-wrapper">
-        <ChatVoiceToggle 
+        <ChatVoiceToggle
           :buttons="[
             { id: 'chat', text: 'Chat' },
-            { id: 'voice', text: 'Voice' }
+            { id: 'voice', text: 'Voice' },
           ]"
-          @mode-change="handleModeChange" 
+          @mode-change="handleModeChange"
         />
         <PromptInput ref="promptInputRef" :is-loading="isProcessing" @submit="handlePromptSubmit" />
+        <div class="generate-an-image-wrapper">
+          <img :src="appImages['image-icon.svg']" />
+          <div class="generate-an-image-text">Generate an Image</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, inject } from 'vue';
 import { useRoute } from 'vue-router';
 import PromptInput from './PromptInput.vue';
 import ChatVoiceToggle from './ChatVoiceToggle.vue';
+
+const appImages = inject('appImages');
 
 const route = useRoute();
 const isProcessing = ref(false);
@@ -85,19 +101,113 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   gap: 1rem;
-  .ai-home-page-content-wrapper{
+  position: relative;
+  overflow: hidden;
+
+  .animated-background {
+    position: absolute;
+    bottom: -180px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 150px;
+    border-radius: 175px;
+    background: #ff7316;
+    filter: blur(100px);
+    animation: morph 8s ease-in-out infinite;
+    z-index: 1;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+    .asian-paints-logo {
+      width: 7.625rem;
+      height: 1.5rem;
+      aspect-ratio: 61/12;
+    }
+  }
+  .ai-home-page-content-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     // align-self: stretch;
     max-width: 50.8125rem;
+    flex-grow: 1;
+    justify-content: center;
+    gap: 4rem;
+    width: 100%;
+    .asian-paints-ai-heading-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      .asian-paints-ai-text {
+        align-self: stretch;
+        color: var(--gray-600, #4b5563);
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .ai-logo-wrapper {
+        border-radius: 50%;
+      }
+    }
     .chat-voice-prompt-wrapper {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: 0.5rem;
       align-self: stretch;
+      width: 100%;
     }
+    .generate-an-image-wrapper {
+      display: flex;
+      padding: 0.5rem 1rem;
+      align-items: center;
+      gap: 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid var(--gray-100, #f3f4f6);
+      cursor: pointer;
+      transition: all 0.3s ease-in;
+      margin-top: 1.5rem;
+      align-self: center;
+      .generate-an-image-text {
+        color: var(--gray-500, #6b7280);
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: all 0.3s ease-in;
+      }
+      &:hover {
+        background-color: #f8f9fa;
+        border-color: #d1d5db;
+        .generate-an-image-text {
+          color: #374151;
+        }
+      }
+    }
+  }
+}
+
+@keyframes morph {
+  0%,
+  100% {
+    border-radius: 175px;
+    height: 150px;
+  }
+  25% {
+    border-radius: 100px;
+    height: 200px;
+  }
+  50% {
+    border-radius: 50px;
+    height: 180px;
+  }
+  75% {
+    border-radius: 75px;
+    height: 220px;
   }
 }
 </style>
