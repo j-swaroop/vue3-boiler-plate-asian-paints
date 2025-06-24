@@ -93,3 +93,32 @@ body {
   pointer-events: none;
   opacity: 0.5;
 }
+
+// Heartbeat Animation
+.heartbeat-animation {
+  animation: heartbeat 3.5s ease-in-out infinite;
+  box-shadow: 3px 0 6px 3px rgba(255, 69, 0, 0.2);
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 3px 0 6px 3px rgba(255, 69, 0, 0.2);
+  }
+  14% {
+    transform: scale(1.1) rotate(15deg);
+    box-shadow: 8px 0 12px 6px rgba(255, 69, 0, 0.3);
+  }
+  28% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 3px 0 6px 3px rgba(255, 69, 0, 0.2);
+  }
+  42% {
+    transform: scale(1.1) rotate(-15deg);
+    box-shadow: 8px 0 12px 6px rgba(255, 69, 0, 0.3);
+  }
+  70% {
+    transform: scale(1) rotate(0deg);
+    box-shadow: 3px 0 6px 3px rgba(255, 69, 0, 0.2);
+  }
+}
